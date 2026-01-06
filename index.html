@@ -3,14 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <title>Vault Waiting List</title>
-
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f4f6f8;
       padding: 40px;
     }
-
     .container {
       max-width: 500px;
       margin: auto;
@@ -19,102 +17,95 @@
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-
-    h1 {
-      text-align: center;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    li {
-      padding: 10px 0;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .join-btn {
-      width: 100%;
-      padding: 12px;
-      margin-top: 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .status {
-      text-align: center;
-      color: #666;
-      margin-bottom: 10px;
-    }
+    h1 { text-align: center; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd; }
+    .join-btn { width: 100%; padding: 12px; margin-top: 20px; font-size: 16px; cursor: pointer; }
+    .delete-btn { background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+    .status { text-align: center; color: #666; margin-bottom: 10px; }
   </style>
 </head>
 <body>
-
   <div class="container">
-    <h1>RiverValley Darts Vault Waiting List</h1>
-
+    <h1>RV Vault Waiting List</h1>
     <div id="status" class="status">Loading list…</div>
     <ul id="list"></ul>
-
     <button class="join-btn" onclick="joinList()">Join Waiting List</button>
   </div>
 
-  <script>
-    // 🔴 CHANGE NOTHING EXCEPT THESE IF YOU FORK
-    const OWNER = "rushtowndarts";
-    const REPO = "VaultWaitingList";
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
+  <script>
+    // 🔴 REPLACE THIS WITH YOUR FIREBASE CONFIG
+      const firebaseConfig = {
+    apiKey: "AIzaSyCmmxyYuSiZOJ8mT3vxPfIDjl34jaavWBM",
+    authDomain: "vaultwaitinglist.firebaseapp.com",
+    projectId: "vaultwaitinglist",
+    storageBucket: "vaultwaitinglist.firebasestorage.app",
+    messagingSenderId: "165131543676",
+    appId: "1:165131543676:web:1d8cdc6627053b61a3d5f9",
+    measurementId: "G-EV313ZLTLC"
+  };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
     const listEl = document.getElementById("list");
     const statusEl = document.getElementById("status");
 
-    async function loadList() {
-      try {
-        const response = await fetch(
-          `https://api.github.com/repos/${OWNER}/${REPO}/issues?state=open&labels=waiting`
-        );
+    // Admin password (simple protection)
+    const ADMIN_PASSWORD = "admin123";
 
-        const issues = await response.json();
+    let isAdmin = false;
 
-        listEl.innerHTML = "";
-        statusEl.style.display = "none";
-
-        let position = 1;
-
-        issues.forEach(issue => {
-          if (issue.pull_request) return;
-
-          const name = issue.title.replace("Waiting List - ", "");
-          const li = document.createElement("li");
-          li.textContent = `${position}. ${name}`;
-          listEl.appendChild(li);
-
-          position++;
-        });
-
-        if (position === 1) {
-          statusEl.textContent = "No one is on the waiting list yet.";
-          statusEl.style.display = "block";
-        }
-      } catch (error) {
-        statusEl.textContent = "Unable to load waiting list.";
+    // Auto-load / listen to database changes
+    db.ref("waitingList").on("value", snapshot => {
+      const data = snapshot.val() || {};
+      listEl.innerHTML = "";
+      let keys = Object.keys(data);
+      if(keys.length === 0){
+        statusEl.textContent = "No one is on the waiting list yet.";
         statusEl.style.display = "block";
+        return;
+      }
+      statusEl.style.display = "none";
+
+      keys.forEach((key, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${index + 1}. ${data[key].name}`;
+        if(isAdmin){
+          const btn = document.createElement("button");
+          btn.textContent = "Delete";
+          btn.className = "delete-btn";
+          btn.onclick = () => db.ref("waitingList/" + key).remove();
+          li.appendChild(btn);
+        }
+        listEl.appendChild(li);
+      });
+    });
+
+    function joinList(){
+      const name = prompt("Enter your name:");
+      if(!name) return;
+      const newRef = db.ref("waitingList").push();
+      newRef.set({ name });
+    }
+
+    // Ask admin password
+    function enableAdmin(){
+      const pwd = prompt("Enter admin password:");
+      if(pwd === ADMIN_PASSWORD){
+        isAdmin = true;
+        alert("Admin mode enabled. Delete buttons are now visible.");
+      } else {
+        alert("Wrong password");
       }
     }
 
-    function joinList() {
-      const name = prompt("Enter your name:");
-      if (!name) return;
-
-      const url =
-        `https://github.com/${OWNER}/${REPO}/issues/new?` +
-        `title=${encodeURIComponent("Waiting List - " + name)}&labels=waiting`;
-
-      window.open(url, "_blank");
-    }
-
-    loadList();
+    // Optional: prompt admin mode on load
+    // enableAdmin(); 
   </script>
-
 </body>
 </html>
