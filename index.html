@@ -27,7 +27,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>RiverValley 1 Darts Vault Waiting List</h1>
+    <h1>RiverValley  Darts Vault Waiting List</h1>
     <div id="status" class="status">Loading list…</div>
     <ul id="list"></ul>
     <button class="join-btn" onclick="joinList()">Join Waiting List</button>
@@ -54,7 +54,7 @@
     firebase.initializeApp(firebaseConfig);
 
     // Database reference (update URL to your Realtime DB URL)
-    const db = firebase.database(firebase.app(), "https://vaultwaitinglist-default-rtdb.europe-west1.firebasedatabase.app");
+    const db = firebase.database(firebase.app(), "https://vaultwaitinglist-default-rtdb.firebaseio.com");
 
     const listEl = document.getElementById("list");
     const statusEl = document.getElementById("status");
