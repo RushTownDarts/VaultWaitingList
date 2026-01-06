@@ -1,0 +1,12 @@
+name: Join Waiting List
+description: Add yourself to the waiting list
+title: "Waiting List - "
+labels: ["waiting"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Name
+      placeholder: Enter your name
+    validations:
+      required: true
