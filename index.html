@@ -20,17 +20,18 @@
     h1 { text-align: center; }
     ul { list-style: none; padding: 0; }
     li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd; }
-    .join-btn { width: 100%; padding: 12px; margin-top: 20px; font-size: 16px; cursor: pointer; }
+    .join-btn, .admin-btn { width: 100%; padding: 12px; margin-top: 10px; font-size: 16px; cursor: pointer; }
     .delete-btn { background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
     .status { text-align: center; color: #666; margin-bottom: 10px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>RV Vault Waiting List</h1>
+    <h1>Vault Waiting List</h1>
     <div id="status" class="status">Loading list…</div>
     <ul id="list"></ul>
     <button class="join-btn" onclick="joinList()">Join Waiting List</button>
+    <button class="admin-btn" onclick="enableAdmin()">Admin Login</button>
   </div>
 
   <!-- Firebase SDK -->
@@ -38,33 +39,35 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script>
-    // 🔴 REPLACE THIS WITH YOUR FIREBASE CONFIG
-      const firebaseConfig = {
-    apiKey: "AIzaSyCmmxyYuSiZOJ8mT3vxPfIDjl34jaavWBM",
-    authDomain: "vaultwaitinglist.firebaseapp.com",
-    projectId: "vaultwaitinglist",
-    storageBucket: "vaultwaitinglist.firebasestorage.app",
-    messagingSenderId: "165131543676",
-    appId: "1:165131543676:web:1d8cdc6627053b61a3d5f9",
-    measurementId: "G-EV313ZLTLC"
-  };
+    // 🔴 Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCmmxyYuSiZOJ8mT3vxPfIDjl34jaavWBM",
+      authDomain: "vaultwaitinglist.firebaseapp.com",
+      projectId: "vaultwaitinglist",
+      storageBucket: "vaultwaitinglist.firebasestorage.app",
+      messagingSenderId: "165131543676",
+      appId: "1:165131543676:web:1d8cdc6627053b61a3d5f9",
+      measurementId: "G-EV313ZLTLC"
+    };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+
+    // Database reference (update URL to your Realtime DB URL)
+    const db = firebase.database(firebase.app(), "https://vaultwaitinglist-default-rtdb.firebaseio.com");
+
     const listEl = document.getElementById("list");
     const statusEl = document.getElementById("status");
 
-    // Admin password (simple protection)
+    // Admin
     const ADMIN_PASSWORD = "admin123";
-
     let isAdmin = false;
 
-    // Auto-load / listen to database changes
+    // Listen for real-time updates
     db.ref("waitingList").on("value", snapshot => {
       const data = snapshot.val() || {};
       listEl.innerHTML = "";
-      let keys = Object.keys(data);
+      const keys = Object.keys(data);
       if(keys.length === 0){
         statusEl.textContent = "No one is on the waiting list yet.";
         statusEl.style.display = "block";
@@ -86,6 +89,7 @@
       });
     });
 
+    // Add user to list
     function joinList(){
       const name = prompt("Enter your name:");
       if(!name) return;
@@ -93,7 +97,7 @@
       newRef.set({ name });
     }
 
-    // Ask admin password
+    // Enable admin mode
     function enableAdmin(){
       const pwd = prompt("Enter admin password:");
       if(pwd === ADMIN_PASSWORD){
@@ -103,9 +107,6 @@
         alert("Wrong password");
       }
     }
-
-    // Optional: prompt admin mode on load
-    // enableAdmin(); 
   </script>
 </body>
 </html>
