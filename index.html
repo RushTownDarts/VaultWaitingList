@@ -54,13 +54,13 @@
     firebase.initializeApp(firebaseConfig);
 
     // Database reference (update URL to your Realtime DB URL)
-    const db = firebase.database(firebase.app(), "https://vaultwaitinglist-default-rtdb.europe-west1.firebasedatabase.app/");
+    const db = firebase.database(firebase.app(), "https://vaultwaitinglist-default-rtdb.europe-west1.firebasedatabase.app");
 
     const listEl = document.getElementById("list");
     const statusEl = document.getElementById("status");
 
     // Admin
-    const ADMIN_PASSWORD = "admin123";
+    const ADMIN_PASSWORD = "RVDARTS180";
     let isAdmin = false;
 
     // Listen for real-time updates
